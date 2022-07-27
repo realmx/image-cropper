@@ -32,11 +32,6 @@ Page({
     return Math.sqrt(Math.pow(X, 2) + Math.pow(Y, 2))
   },
 
-  // 获取触摸索引
-  getTouchIndex(touches: WechatMiniprogram.TouchDetail[], touche: WechatMiniprogram.TouchDetail) {
-    return touches.findIndex(({ clientX, clientY }) => clientX === touche.clientX && clientY === touche.clientY)
-  },
-
   // 四舍五入
   getRound(value: number, decimal: number = 8) {
     const length = Number(`1${Array(decimal).fill(0).join('')}`)
