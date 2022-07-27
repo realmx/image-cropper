@@ -535,7 +535,7 @@ Page({
 
           ctx.translate(X + left, Y + top)
           ctx.scale(imgPoint.scale * (limit.mirror.value ? -1 : 1), imgPoint.scale)
-          ctx.rotate((imgPoint.rotate * Math.PI) / 180)
+          ctx.rotate((imgPoint.rotate * (limit.mirror.value ? -1 : 1) * Math.PI) / 180)
           ctx.drawImage(img, -left, -top, width, height)
 
           // 预览图片
