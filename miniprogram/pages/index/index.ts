@@ -554,23 +554,15 @@ Page({
               // 预览图片
               target === 'preview' && wx.previewMedia({ sources: [{ url: result.tempFilePath }] })
 
-              // 生成图片
-              target === 'render' &&
-                wx.getSetting({
-                  success: async ({ authSetting }) => {
-                    try {
-                      if (!authSetting['scope.writePhotosAlbum'])
-                        await wx.authorize({ scope: 'scope.writePhotosAlbum' })
-
-                      wx.saveImageToPhotosAlbum({
-                        filePath: result.tempFilePath,
-                        success: () => wx.showToast({ title: '保存成功', icon: 'success' })
-                      })
-                    } catch (error) {
-                      console.error(error)
-                    }
-                  }
+              // 保存图片
+              if (target === 'save') {
+                const { authSetting } = await wx.getSetting()
+                if (!authSetting['scope.writePhotosAlbum']) await wx.authorize({ scope: 'scope.writePhotosAlbum' })
+                wx.saveImageToPhotosAlbum({
+                  filePath: result.tempFilePath,
+                  success: () => wx.showToast({ title: '保存成功', icon: 'success' })
                 })
+              }
             } else {
               wx.showToast({ title: '生成失败', icon: 'error' })
             }

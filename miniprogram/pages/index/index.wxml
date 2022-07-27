@@ -75,7 +75,7 @@
           type="default"
         >缩小</button>
         <button bindtap="init" disabled="{{ !maskStyle }}" type="default">重置</button>
-        <button bindtap="draw" data-target="render" type="primary">保存</button>
+        <button bindtap="draw" data-target="save" type="primary">保存</button>
       </block>
     </view>
   </view>
