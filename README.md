@@ -13,3 +13,7 @@
 | maxScale   | number | 3      | 最大缩放比例   |
 | minScale   | number | 0.5    | 最小缩放比例   |
 | quality    | number | 1      | 生成图片的质量 |
+
+- 操作截图
+
+![screenshot](./screenshot.jpg)
