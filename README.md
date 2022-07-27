@@ -16,4 +16,8 @@
 
 - 操作截图
 
-![screenshot](./screenshot.jpg)
+![screenshot1](./docs/screenshot1.jpg)
+
+- 生成图片
+
+![screenshot2](./docs/screenshot2.jpg)
