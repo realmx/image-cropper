@@ -81,33 +81,29 @@ Page({
     limit[key].value = detail.value
     if (key === 'move' && detail.value) {
       limit.rotate.value = !detail.value
-
       // 计算旋转角度，若大于45度，则向前旋转
       const surplus = imgPoint.rotate % 90
       imgPoint.rotate -= surplus - (surplus > 45 ? 90 : 0)
-
-      wx.nextTick(() => {
-        this.fill(cutPoint, imgPoint)
-        this.setData({
-          imgPoint,
-          imgStyle: this.getStyle(imgPoint, 'img', ['--img-transition-duration:0.4s'])
-        })
-      })
     }
     if (key === 'rotate' && detail.value) {
       limit.move.value = !detail.value
     }
     if (key === 'mirror') {
       imgPoint.scaleX = detail.value ? -1 : 1
+    }
+
+    this.setData({ limit, maskStyle: '--mask-opacity:0.8' })
+
+    // 渲染样式
+    if ((key === 'move' && detail.value) || key === 'mirror') {
       wx.nextTick(() => {
-        this.fill(cutPoint, imgPoint)
+        this.fillBox(cutPoint, imgPoint)
         this.setData({
           imgPoint,
           imgStyle: this.getStyle(imgPoint, 'img', ['--img-transition-duration:0.4s'])
         })
       })
     }
-    this.setData({ limit, maskStyle: '--mask-opacity:0.8' })
   },
 
   // 初始化
@@ -355,7 +351,7 @@ Page({
         clientY: touche.clientY
       })
 
-      limit.move.value && this.fill(cutPoint, imgPoint)
+      limit.move.value && this.fillBox(cutPoint, imgPoint)
 
       this.setData({
         maskStyle: '--mask-opacity:0.5',
@@ -372,51 +368,45 @@ Page({
     }
   },
 
-  // 填充宽度
-  fillWidth(
-    cutPoint: { [key: string]: number },
-    imgPoint: { [key: string]: number },
-    cover: { [key: string]: number },
-    vertical: number
-  ) {
-    imgPoint.scale = cutPoint.width / imgPoint.width
-
-    Object.assign(cover, { width: imgPoint.width * imgPoint.scale, height: imgPoint.height * imgPoint.scale })
-    vertical && Object.assign(cover, { width: cover.height, height: cover.width })
-
-    imgPoint.left = cutPoint.left + (cover.width - imgPoint.width) / 2
-  },
-  // 填充高度
-  fillHeight(
-    cutPoint: { [key: string]: number },
-    imgPoint: { [key: string]: number },
-    cover: { [key: string]: number },
-    vertical: number
-  ) {
-    imgPoint.scale = cutPoint.height / imgPoint.height
-
-    Object.assign(cover, { width: imgPoint.width * imgPoint.scale, height: imgPoint.height * imgPoint.scale })
-    vertical && Object.assign(cover, { width: cover.height, height: cover.width })
-
-    imgPoint.top = cutPoint.top + (cover.height - imgPoint.height) / 2
-  },
   // 填充图片
-  fill(cutPoint: { [key: string]: number }, imgPoint: { [key: string]: number }) {
+  fillBox(cutPoint: { [key: string]: number }, imgPoint: { [key: string]: number }) {
+    const { options, limit } = this.data
+
     if (!imgPoint.width) return
 
     // 图片是否纵向
     const vertical = (imgPoint.rotate / 90) % 2
     // 图片放大比例宽高
-    const cover = Object({ width: imgPoint.width * imgPoint.scale, height: imgPoint.height * imgPoint.scale })
+    const width = imgPoint.width * imgPoint.scale
+    const height = imgPoint.height * imgPoint.scale
+    const cover = { width, height }
     // 纵向，宽高对换
-    vertical && Object.assign(cover, { width: cover.height, height: cover.width })
+    vertical && Object.assign(cover, { width: height, height: width })
+
+    // 填充
+    const fill = (scale: number) => {
+      imgPoint.scale = Math.min(Math.max(scale, limit.move.value ? 1 : options.minScale), options.maxScale)
+      const width = imgPoint.width * imgPoint.scale
+      const height = imgPoint.height * imgPoint.scale
+      Object.assign(cover, { width, height })
+      vertical && Object.assign(cover, { width: height, height: width })
+    }
 
     // 填充宽度
-    cutPoint.width > cover.width && this.fillWidth(cutPoint, imgPoint, cover, vertical)
+    if (cutPoint.width > cover.width) {
+      fill(cutPoint.width / (vertical ? imgPoint.height : imgPoint.width))
+      imgPoint.left = cutPoint.left + (cover.width - imgPoint.width) / 2
+    }
     // 填充高度
-    cutPoint.height > cover.height && this.fillHeight(cutPoint, imgPoint, cover, vertical)
+    if (cutPoint.height > cover.height) {
+      fill(cutPoint.height / (vertical ? imgPoint.width : imgPoint.height))
+      imgPoint.top = cutPoint.top + (cover.height - imgPoint.height) / 2
+    }
     // 修正宽度
-    cutPoint.width > cover.width && this.fillWidth(cutPoint, imgPoint, cover, vertical)
+    if (cutPoint.width > cover.width) {
+      fill(cutPoint.width / (vertical ? imgPoint.height : imgPoint.width))
+      imgPoint.left = cutPoint.left + (cover.width - imgPoint.width) / 2
+    }
 
     // 移动到剪裁框边缘
     const top = cutPoint.top + (cover.height - imgPoint.height) / 2
@@ -461,7 +451,7 @@ Page({
 
     imgPoint.rotate += 90
 
-    limit.move.value && this.fill(cutPoint, imgPoint)
+    limit.move.value && this.fillBox(cutPoint, imgPoint)
 
     this.setData({
       maskStyle: '--mask-opacity:0.5',
@@ -491,12 +481,10 @@ Page({
 
     imgTimer && clearTimeout(imgTimer)
 
-    imgPoint.scale = Math.min(
-      Math.max(imgPoint.scale + Number(step), limit.move.value ? 1 : options.minScale),
-      options.maxScale
-    )
+    const scale = imgPoint.scale + Number(step)
+    imgPoint.scale = Math.min(Math.max(scale, limit.move.value ? 1 : options.minScale), options.maxScale)
 
-    limit.move.value && this.fill(cutPoint, imgPoint)
+    limit.move.value && this.fillBox(cutPoint, imgPoint)
 
     this.setData({
       maskStyle: '--mask-opacity:0.5',
