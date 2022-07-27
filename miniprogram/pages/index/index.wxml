@@ -1,0 +1,79 @@
+<!--pages/index/index.wxml-->
+<view class="tips" wx:if="{{ imgPoint.width }}">点击裁剪框可预览图片</view>
+
+<view class="cropper" data-flex="column" style="{{ maskStyle }};{{ cutStyle }};{{ imgStyle }}">
+  <view class="cropper-mask top" data-flex-box="0" />
+  <view data-flex>
+    <view class="cropper-mask left" data-flex-box="0" />
+    <view class="cropper-cut">
+      <view
+        class="cropper-cut-{{ item }}"
+        data-target="{{ item }}"
+        mut-bind:touchend="cutTouch"
+        mut-bind:touchmove="cutTouch"
+        mut-bind:touchstart="cutTouch"
+        wx:for="{{ ['TL','TR','BL','BR'] }}"
+        wx:key="index"
+      />
+    </view>
+    <view class="cropper-mask" data-flex-box="1" />
+  </view>
+  <view class="cropper-mask" data-flex-box="1" />
+  <view
+    bindtap="draw"
+    class="cropper-img cover"
+    data-target="preview"
+    mut-bind:touchend="imgTouch"
+    mut-bind:touchmove="imgTouch"
+    mut-bind:touchstart="imgTouch"
+  />
+  <image bindload="load" class="cropper-img" lazy-load src="{{ imgSrc }}" />
+
+  <canvas class="canvas" disable-scroll id="canvas" type="2d" />
+
+  <view class="footer" data-flex="column">
+    <view class="footer-item" data-flex="column" wx:if="{{ limit.rotate.value }}">
+      <view class="slider-text">{{ imgPoint.rotate }}º</view>
+      <slider
+        active-color="#e9e9e9"
+        bindchange="sliderChange"
+        bindchanging="sliderChange"
+        block-size="20"
+        max="360"
+        min="-360"
+        value="{{ imgPoint.rotate }}"
+      />
+    </view>
+    <view class="footer-item" data-flex="align:center wrap:wrap" wx:if="{{ imgPoint.width }}">
+      <view class="switch" data-flex="align:center" wx:for="{{ limit }}" wx:key="index">
+        <switch
+          bindchange="switchChange"
+          checked="{{ item.value }}"
+          class="switch-button"
+          data-key="{{ index }}"
+        />
+        <text>{{ item.name }}</text>
+      </view>
+    </view>
+    <view class="footer-item" data-flex="align:center wrap:wrap">
+      <button bindtap="upload" type="default">上传</button>
+      <block wx:if="{{ imgPoint.width }}">
+        <button bindtap="rotate" disabled="{{ limit.rotate.value }}" type="default">旋转</button>
+        <button
+          bindtap="zoom"
+          data-step="0.2"
+          disabled="{{ imgPoint.scale === options.maxScale }}"
+          type="default"
+        >放大</button>
+        <button
+          bindtap="zoom"
+          data-step="-0.2"
+          disabled="{{ imgPoint.scale === (limit.move.value ? 1 : options.minScale) }}"
+          type="default"
+        >缩小</button>
+        <button bindtap="init" disabled="{{ !maskStyle }}" type="default">重置</button>
+        <button bindtap="draw" data-target="render" type="primary">保存</button>
+      </block>
+    </view>
+  </view>
+</view>

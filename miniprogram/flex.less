@@ -1,0 +1,40 @@
+// data-flex
+[data-flex] {
+  display: flex;
+}
+
+@flex-direction: row, row-reverse, column, column-reverse;
+each(@flex-direction, {
+  [data-flex~='@{value}'] {
+    flex-direction: @value;
+  }
+});
+
+@justify-content: flex-start, flex-end, space-around, space-between, space-evenly, center, baseline, stretch;
+each(@justify-content, {
+  [data-flex~='justify:@{value}'] {
+    justify-content: @value;
+  }
+});
+
+@align-items: flex-start, flex-end, center, baseline, stretch;
+each(@align-items, {
+  [data-flex~='align:@{value}'] {
+    align-items: @value;
+  }
+});
+
+@flex-wrap: wrap, wrap-reverse, nowrap;
+each(@flex-wrap, {
+  [data-flex~='wrap:@{value}'] {
+    flex-wrap: @value;
+  }
+});
+
+@flex-box: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10;
+each(@flex-box, {
+  [data-flex-box='@{value}'] {
+    flex-grow: @value;
+    flex-shrink: @value;
+  }
+});

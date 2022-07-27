@@ -1,0 +1,13 @@
+{
+  "pages": ["pages/index/index"],
+  "usingComponents": {},
+  "window": {
+    "backgroundColor": "#F6F7F8",
+    "navigationBarBackgroundColor": "#F6F7F8",
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "图片裁剪器",
+    "initialRenderingCache": "dynamic"
+  },
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

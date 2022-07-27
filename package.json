@@ -1,0 +1,9 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {
+    "miniprogram-api-typings": "^3.5.0"
+  }
+}
