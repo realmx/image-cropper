@@ -1,4 +1,4 @@
-# <img src="./docs/logo.jpg" width="32" height="32" align="center" /> 小程序-图片裁剪小助手
+# <img src="./docs/logo.jpg" width="40" height="40" align="top" /> 小程序-图片裁剪小助手
 
 - 参数说明
 
