@@ -13,7 +13,8 @@ Page({
       minWidth: 100,
       minHeight: 100,
       maxScale: 3,
-      minScale: 0.5
+      minScale: 0.5,
+      quality: 1
     }
   }),
 
@@ -497,7 +498,7 @@ Page({
 
   // 绘制图片
   draw({ currentTarget, touches: [touche] }: WechatMiniprogram.TouchEvent) {
-    const { SYS, limit, cutPoint, imgPoint, imgSrc } = this.data
+    const { SYS, options, limit, cutPoint, imgPoint, imgSrc } = this.data
     const { target } = currentTarget.dataset
 
     if (!imgPoint.width) return
@@ -540,26 +541,48 @@ Page({
 
           // 预览图片
           target === 'preview' &&
-            wx.previewMedia({
-              sources: [{ url: canvas.toDataURL('image/png') }]
-            })
+            wx.previewMedia({ sources: [{ url: canvas.toDataURL('image/png', options.quality) }] })
 
           // 生成图片
           target === 'render' &&
-            wx.canvasToTempFilePath({
-              width,
-              height,
-              destWidth: width,
-              destHeight: height,
-              canvas,
-              success: ({ tempFilePath }) => wx.saveImageToPhotosAlbum({ filePath: tempFilePath })
+            wx.getSetting({
+              success: ({ authSetting }) => {
+                const width = cutPoint.width * imgPoint.scale * dpr
+                const height = cutPoint.height * imgPoint.scale * dpr
+
+                if (authSetting['scope.writePhotosAlbum']) {
+                  this.saveImage(width, height, options.quality, canvas)
+                } else {
+                  wx.authorize({
+                    scope: 'scope.writePhotosAlbum',
+                    success: () => this.saveImage(width, height, options.quality, canvas)
+                  })
+                }
+              }
             })
         }
       })
   },
 
-  // 渲染图片
-  render() {},
+  // 生成图片
+  saveImage(width: number, height: number, quality: number, canvas: WechatMiniprogram.RenderingContext) {
+    wx.canvasToTempFilePath({
+      x: 0,
+      y: 0,
+      width,
+      height,
+      destWidth: width,
+      destHeight: height,
+      canvas,
+      fileType: 'png',
+      quality,
+      success: ({ tempFilePath }) =>
+        wx.saveImageToPhotosAlbum({
+          filePath: tempFilePath,
+          success: () => wx.showToast({ title: '保存成功', icon: 'success' })
+        })
+    })
+  },
 
   /**
    * 生命周期函数--监听页面加载
