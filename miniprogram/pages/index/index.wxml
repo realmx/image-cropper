@@ -1,5 +1,8 @@
 <!--pages/index/index.wxml-->
-<view class="tips" wx:if="{{ imgPoint.width }}">点击裁剪框可预览图片</view>
+<view class="tips" wx:if="{{ imgPoint.width }}">
+  <view wx:if="{{ limit.rotate.value }}">双指可放大缩小，可自由旋转</view>
+  <view>点击裁剪框可预览图片</view>
+</view>
 
 <view class="cropper" data-flex="column" style="{{ maskStyle }};{{ cutStyle }};{{ imgStyle }}">
   <view class="cropper-mask top" data-flex-box="0" />

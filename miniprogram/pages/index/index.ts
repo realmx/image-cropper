@@ -521,62 +521,64 @@ Page({
         const img = canvas.createImage()
         img.src = imgSrc
         img.crossOrigin = 'Anonymous'
-        img.onload = () => {
-          const X = (imgPoint.left - cutPoint.left) * dpr
-          const Y = (imgPoint.top - cutPoint.top) * dpr
-          const width = imgPoint.width * dpr
-          const height = imgPoint.height * dpr
-          const top = height / 2
-          const left = width / 2
+        img.onload = async () => {
+          try {
+            const X = (imgPoint.left - cutPoint.left) * dpr
+            const Y = (imgPoint.top - cutPoint.top) * dpr
+            const width = imgPoint.width * dpr
+            const height = imgPoint.height * dpr
+            const top = height / 2
+            const left = width / 2
 
-          ctx.translate(X + left, Y + top)
-          ctx.scale(imgPoint.scale * (limit.mirror.value ? -1 : 1), imgPoint.scale)
-          ctx.rotate((imgPoint.rotate * (limit.mirror.value ? -1 : 1) * Math.PI) / 180)
-          ctx.drawImage(img, -left, -top, width, height)
+            ctx.translate(X + left, Y + top)
+            ctx.scale(imgPoint.scale * (limit.mirror.value ? -1 : 1), imgPoint.scale)
+            ctx.rotate((imgPoint.rotate * (limit.mirror.value ? -1 : 1) * Math.PI) / 180)
+            ctx.drawImage(img, -left, -top, width, height)
 
-          // 预览图片
-          target === 'preview' &&
-            wx.previewMedia({ sources: [{ url: canvas.toDataURL('image/png', options.quality) }] })
+            const drawWidth = cutPoint.width * imgPoint.scale * dpr
+            const drawHeight = cutPoint.height * imgPoint.scale * dpr
 
-          // 生成图片
-          target === 'render' &&
-            wx.getSetting({
-              success: ({ authSetting }) => {
-                const width = cutPoint.width * imgPoint.scale * dpr
-                const height = cutPoint.height * imgPoint.scale * dpr
-
-                if (authSetting['scope.writePhotosAlbum']) {
-                  this.saveImage(width, height, options.quality, canvas)
-                } else {
-                  wx.authorize({
-                    scope: 'scope.writePhotosAlbum',
-                    success: () => this.saveImage(width, height, options.quality, canvas)
-                  })
-                }
-              }
+            const result = await wx.canvasToTempFilePath({
+              x: 0,
+              y: 0,
+              width: drawWidth,
+              height: drawHeight,
+              destWidth: drawWidth,
+              destHeight: drawHeight,
+              canvas,
+              fileType: 'png',
+              quality: options.quality
             })
+
+            if (result?.tempFilePath) {
+              // 预览图片
+              target === 'preview' && wx.previewMedia({ sources: [{ url: result.tempFilePath }] })
+
+              // 生成图片
+              target === 'render' &&
+                wx.getSetting({
+                  success: async ({ authSetting }) => {
+                    try {
+                      if (!authSetting['scope.writePhotosAlbum'])
+                        await wx.authorize({ scope: 'scope.writePhotosAlbum' })
+
+                      wx.saveImageToPhotosAlbum({
+                        filePath: result.tempFilePath,
+                        success: () => wx.showToast({ title: '保存成功', icon: 'success' })
+                      })
+                    } catch (error) {
+                      console.error(error)
+                    }
+                  }
+                })
+            } else {
+              wx.showToast({ title: '生成失败', icon: 'error' })
+            }
+          } catch (error) {
+            console.error(error)
+          }
         }
       })
-  },
-
-  // 生成图片
-  saveImage(width: number, height: number, quality: number, canvas: WechatMiniprogram.RenderingContext) {
-    wx.canvasToTempFilePath({
-      x: 0,
-      y: 0,
-      width,
-      height,
-      destWidth: width,
-      destHeight: height,
-      canvas,
-      fileType: 'png',
-      quality,
-      success: ({ tempFilePath }) =>
-        wx.saveImageToPhotosAlbum({
-          filePath: tempFilePath,
-          success: () => wx.showToast({ title: '保存成功', icon: 'success' })
-        })
-    })
   },
 
   /**
