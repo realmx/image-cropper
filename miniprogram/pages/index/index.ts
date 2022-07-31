@@ -40,19 +40,21 @@ Page({
 
   // 样式字符串
   getStyle(point: { [key: string]: number }, prefix: string, extend: string[] = []) {
-    const ext = Object({ rotate: 'deg', scale: ' ', scaleX: ' ' })
+    // 单位
+    const unit = Object({ rotate: 'deg', scale: ' ', scaleX: ' ' })
     const styles: string[] = []
 
+    // 四舍五入小数点位数
+    Object.keys(point).map((key) => (point[key] = this.getRound(point[key])))
+
     Object.keys(point)
-      .map((key) => {
-        point[key] = this.getRound(point[key])
-        return key
-      })
+      // 过滤不需要拼接的属性
       .filter((key) => !/(scaleHW|scaleWH)/.test(key))
+      // 拼接样式
       .map((key) => {
         // 如果开启镜像，则反向旋转
         const value = point[key] * (key === 'rotate' ? point.scaleX : 1)
-        styles.push(`--${prefix}-${key}:${value + (ext[key] || 'px')}`)
+        styles.push(`--${prefix}-${key}:${value + (unit[key] || 'px')}`)
       })
 
     return styles.concat(extend).join(';')
